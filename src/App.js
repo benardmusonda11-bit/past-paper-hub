@@ -3,7 +3,6 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { BookOpen, Folder, Mail, Phone, MapPin, Download, Loader } from 'lucide-react';
 import { supabase } from './supabaseClient'; 
 
-// Analytics tracking function
 const trackEvent = async (eventType, subject = null, grade = null) => {
   try {
     await supabase.from('analytics').insert([
@@ -40,7 +39,6 @@ const SUBJECTS_BY_GRADE = {
   ]
 };
 
-// Footer Component
 function Footer({ setCurrentView, setSelectedGrade, setSelectedSubject }) {
   const navigate = (view) => {
     setCurrentView(view);
@@ -87,7 +85,6 @@ function Footer({ setCurrentView, setSelectedGrade, setSelectedSubject }) {
   );
 }
 
-// Navigation Component
 function Navigation({ currentPage, setCurrentView, setSelectedGrade, setSelectedSubject }) {
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -195,22 +192,9 @@ export default function PastPaperHub() {
     return papers.filter(p => p.year === parseInt(selectedYear));
   }, [papers, selectedYear]);
 
-  const handleDownload = async (paper) => {
+  const handleDownload = (paper) => {
     trackEvent('download', selectedSubject, selectedGrade);
-    try {
-      const response = await fetch(paper.file_url);
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${selectedSubject}-${paper.year}-${paper.paper_type}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error('Download failed:', err);
-    }
+    window.open(`${paper.file_url}?download=`, '_blank');
   };
 
   if (currentView === 'analytics') {
@@ -456,27 +440,22 @@ export default function PastPaperHub() {
         )}
 
         {!loading && !error && filteredPapers.length > 0 && (
-          <div className="space-y-3">
+          <div className="divide-y divide-gray-200 border border-gray-200 rounded-lg bg-white">
             {filteredPapers.map(paper => (
               <div
                 key={paper.id}
-                className="flex items-center justify-between p-4 bg-white border border-gray-200 rounded-lg hover:bg-blue-50 hover:border-blue-300 transition-all"
+                className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-all"
               >
-                <div className="flex items-center gap-4">
-                  <div className="bg-green-100 text-green-600 p-2 rounded">
-                    <Download size={20} />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-gray-900">{paper.year}</p>
-                    <p className="text-sm text-gray-600">{paper.paper_type}</p>
-                  </div>
+                <div className="bg-red-100 text-red-600 p-2 rounded flex-shrink-0">
+                  <BookOpen size={20} />
                 </div>
                 <button
                   onClick={() => handleDownload(paper)}
-                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-all"
+                  className="text-blue-700 hover:underline font-semibold text-left flex-grow"
                 >
-                  Download
+                  {paper.year} {paper.paper_type}
                 </button>
+                <Download size={18} className="text-gray-400 flex-shrink-0" />
               </div>
             ))}
           </div>
