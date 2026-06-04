@@ -54,7 +54,7 @@ function Footer({ setCurrentView, setSelectedGrade, setSelectedSubject }) {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           <div className="flex flex-col items-start">
             <div className="flex items-center gap-2 mb-3">
-              <img src="/past_paper_hub.png" alt="Past Paper Hub Logo" className="h-12 w-12" />
+              <img src="/past_paper_hub.png" alt="Past Paper Hub Logo" className="h-10 w-auto" />
               <span className="font-bold text-white text-xl">Past Paper Hub</span>
             </div>
             <p className="text-gray-400 text-base leading-relaxed">
@@ -103,7 +103,7 @@ function Navigation({ currentPage, setCurrentView, setSelectedGrade, setSelected
       <div className="max-w-6xl mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           <button onClick={() => navigate('home')} className="flex items-center gap-2 hover:opacity-80 transition">
-            <img src="/past_paper_hub.png" alt="Past Paper Hub Logo" className="h-10 w-10" />
+            <img src="/past_paper_hub.png" alt="Past Paper Hub Logo" className="h-10 w-auto" />
             <span className="font-bold text-gray-900 text-sm">Past Paper Hub</span>
           </button>
           <nav className="hidden md:flex items-center gap-8">
@@ -142,7 +142,6 @@ export default function PastPaperHub() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Track page views - MUST be before conditional returns
   useEffect(() => {
     if (currentView === 'home') {
       trackEvent('page_view', null, null);
@@ -162,7 +161,8 @@ export default function PastPaperHub() {
   useEffect(() => {
     if (currentView === 'papers' && selectedGrade && selectedSubject) {
       fetchPapers();
-    }  // eslint-disable-next-line react-hooks/exhaustive-deps
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentView, selectedGrade, selectedSubject]);
 
   const fetchPapers = async () => {
@@ -195,12 +195,28 @@ export default function PastPaperHub() {
     return papers.filter(p => p.year === parseInt(selectedYear));
   }, [papers, selectedYear]);
 
-  // Analytics View - AFTER all hooks
+  const handleDownload = async (paper) => {
+    trackEvent('download', selectedSubject, selectedGrade);
+    try {
+      const response = await fetch(paper.file_url);
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${selectedSubject}-${paper.year}-${paper.paper_type}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Download failed:', err);
+    }
+  };
+
   if (currentView === 'analytics') {
     return <Analytics setCurrentView={setCurrentView} setSelectedGrade={setSelectedGrade} setSelectedSubject={setSelectedSubject} />;
   }
 
-  // Home View
   if (currentView === 'home') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex flex-col">
@@ -233,7 +249,6 @@ export default function PastPaperHub() {
     );
   }
 
-  // About Us View
   if (currentView === 'about') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex flex-col">
@@ -267,7 +282,6 @@ export default function PastPaperHub() {
     );
   }
 
-  // Contact Us View
   if (currentView === 'contact') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex flex-col">
@@ -324,7 +338,6 @@ export default function PastPaperHub() {
     );
   }
 
-  // Grade Selection View
   if (currentView === 'grades') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex flex-col">
@@ -359,7 +372,6 @@ export default function PastPaperHub() {
     );
   }
 
-  // Subject Selection View
   if (currentView === 'subjects') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex flex-col">
@@ -392,7 +404,6 @@ export default function PastPaperHub() {
     );
   }
 
-  // Papers View
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex flex-col">
       <Navigation currentPage="papers" setCurrentView={setCurrentView} setSelectedGrade={setSelectedGrade} setSelectedSubject={setSelectedSubject} />
@@ -461,15 +472,7 @@ export default function PastPaperHub() {
                   </div>
                 </div>
                 <button
-                  onClick={() => {
-                    trackEvent('download', selectedSubject, selectedGrade);
-                    const link = document.createElement('a');
-                    link.href = paper.file_url;
-                    link.download = `${selectedSubject}-${paper.year}-${paper.paper_type}.pdf`;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                  }}
+                  onClick={() => handleDownload(paper)}
                   className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-all"
                 >
                   Download
