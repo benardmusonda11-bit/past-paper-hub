@@ -162,7 +162,7 @@ export default function PastPaperHub() {
   useEffect(() => {
     if (currentView === 'papers' && selectedGrade && selectedSubject) {
       fetchPapers();
-    }
+    }  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentView, selectedGrade, selectedSubject]);
 
   const fetchPapers = async () => {
