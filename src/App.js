@@ -2,7 +2,7 @@ import Analytics from './Analytics';
 import React, { useState, useMemo, useEffect } from 'react';
 import { BookOpen, Folder, Mail, Phone, MapPin, Download, Loader } from 'lucide-react';
 import { supabase } from './supabaseClient'; 
-import AskTutor from './AskTutor';
+import TutorBot from './TutorBot';
 
 const trackEvent = async (eventType, subject = null, grade = null) => {
   try {
@@ -131,7 +131,7 @@ function Navigation({ currentPage, setCurrentView, setSelectedGrade, setSelected
   );
 }
 
-export default function PastPaperHub() {
+function PastPaperHub() {
   const [currentView, setCurrentView] = useState('home');
   const [selectedGrade, setSelectedGrade] = useState(null);
   const [selectedSubject, setSelectedSubject] = useState(null);
@@ -461,10 +461,17 @@ export default function PastPaperHub() {
             ))}
           </div>
         )}
-
-        <AskTutor subject={selectedSubject} grade={selectedGrade} />
       </div>
       <Footer setCurrentView={setCurrentView} setSelectedGrade={setSelectedGrade} setSelectedSubject={setSelectedSubject} />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <>
+      <PastPaperHub />
+      <TutorBot />
+    </>
   );
 }
