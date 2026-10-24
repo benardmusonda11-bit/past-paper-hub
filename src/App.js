@@ -2,6 +2,7 @@ import Analytics from './Analytics';
 import React, { useState, useMemo, useEffect } from 'react';
 import { BookOpen, Folder, Mail, Phone, MapPin, Download, Loader } from 'lucide-react';
 import { supabase } from './supabaseClient'; 
+import AskTutor from './AskTutor';
 
 const trackEvent = async (eventType, subject = null, grade = null) => {
   try {
@@ -460,6 +461,8 @@ export default function PastPaperHub() {
             ))}
           </div>
         )}
+
+        <AskTutor subject={selectedSubject} grade={selectedGrade} />
       </div>
       <Footer setCurrentView={setCurrentView} setSelectedGrade={setSelectedGrade} setSelectedSubject={setSelectedSubject} />
     </div>
