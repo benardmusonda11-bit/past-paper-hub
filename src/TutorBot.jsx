@@ -1,9 +1,20 @@
 import { useState, useRef, useEffect } from "react";
 import { Bot, X, Send, Loader } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
 import { supabase } from "./supabaseClient";
 
 const GREETING =
   "Hi! I'm your study helper. Type any exam question and I'll explain it step by step.";
+
+// Turns \( ... \) and \[ ... \] into $ ... $ and $$ ... $$ so all math renders.
+function normalizeMath(text) {
+  return String(text || "")
+    .replace(/\\\[([\s\S]*?)\\\]/g, (_, m) => `$$${m}$$`)
+    .replace(/\\\(([\s\S]*?)\\\)/g, (_, m) => `$${m}$`);
+}
 
 export default function TutorBot() {
   const [open, setOpen] = useState(false);
@@ -83,15 +94,24 @@ export default function TutorBot() {
             {messages.map((m, i) => (
               <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                 <div
-                  className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-3 py-2 text-sm leading-relaxed ${
+                  className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm leading-relaxed ${
                     m.role === "user"
-                      ? "bg-blue-600 text-white"
+                      ? "whitespace-pre-wrap bg-blue-600 text-white"
                       : m.role === "error"
-                      ? "bg-red-50 text-red-700"
-                      : "border border-gray-200 bg-white text-gray-900"
+                      ? "whitespace-pre-wrap bg-red-50 text-red-700"
+                      : "overflow-x-auto border border-gray-200 bg-white text-gray-900"
                   }`}
                 >
-                  {m.text}
+                  {m.role === "bot" ? (
+                    <ReactMarkdown
+                      remarkPlugins={[remarkMath]}
+                      rehypePlugins={[rehypeKatex]}
+                    >
+                      {normalizeMath(m.text)}
+                    </ReactMarkdown>
+                  ) : (
+                    m.text
+                  )}
                 </div>
               </div>
             ))}
